@@ -5,7 +5,7 @@ Netswitch - Quickly change the Netplan network configuration file
 """
 
 _NAME = "netSwitch.py"
-_VERS = "2.0"
+_VERS = "2.1"
 _AUTHOR = "LLCZ00"
 _DESCRIPTION = f"""Network Configuration Switch {_VERS}, by {_AUTHOR}\n
 Description: Edits /etc/netplan/01-netcfg.yaml to quickily change network configurations.
@@ -21,11 +21,11 @@ import subprocess
 
 
 class NetplanConfigBuilder:
-    base_config = "network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    enp0s3:\n"
+    base_config = "network:\n  version: 2\n  renderer: networkd\n  ethernets:"
     default_indent = ' '*12
-    def __init__(self, config_path):
+    def __init__(self, config_path, interface="enp0s3"):
         self.config_path = config_path
-        self.config = self.base_config
+        self.config = f"{self.base_config}\n    {interface}:\n"
         self.indent = self.default_indent
         self.msg = ""
 
@@ -103,9 +103,10 @@ def main():
     parser = NetswitchParser(
             prog=_NAME,
             formatter_class=argparse.RawDescriptionHelpFormatter,
-            epilog=f"Examples:\n./{_NAME} -i 10.10.10.1/16\n./{_NAME} --bridged\n./{_NAME} --internal=\"192.168.1.1/24\"",
+            epilog=f"Examples:\n./{_NAME} -a 10.10.10.1/16\n./{_NAME} --dhcp\n./{_NAME} --address=192.168.1.1/24 --dns 192.168.1.2 -g 192.168.1.2 --apply",
             description=_DESCRIPTION
         )
+
     parser.add_argument(
             '-a', '--address',
             help="Set IP address",
@@ -115,13 +116,13 @@ def main():
             type=str
         )
     parser.add_argument(
-            '--dhcp',
+            '-d','--dhcp',
             help="Turn on DHCP",
             dest="dhcp",
             action="store_true"         
         )
     parser.add_argument(
-            '--dns',
+            '-n','--dns',
             help="Set DNS nameserver address",
             metavar="IP",
             dest="dns",
@@ -129,7 +130,7 @@ def main():
             type=str
         )
     parser.add_argument(
-            '--gateway',
+            '-g','--gateway',
             help="Set gateway address",
             metavar="IP",
             dest="gateway",
@@ -137,12 +138,27 @@ def main():
             type=str
         )
     parser.add_argument(
-            '--config',
+            '-i', '--interface',
+            help="Set target interface (Default: enp0s3)",
+            metavar="INTERFACE",
+            dest="interface",
+            default="enp0s3",
+            type=str
+        )
+    parser.add_argument(
+            '-c','--config',
             help="Specify path of config file to edit/create (Default: /etc/netplan/01-netcfg.yaml)",
             metavar="FILEPATH",
             dest="configpath",
             default='/etc/netplan/01-netcfg.yaml',
             type=str
+        )
+    parser.add_argument(
+            '--print',
+            help="Print current netplan configuration",
+            dest="print_config",
+            default=False,
+            action="store_true"
         )
     parser.add_argument(
             '--apply',
@@ -153,11 +169,17 @@ def main():
 
     args = parser.parse_args()
 
+    if args.print_config:
+        with open(args.configpath, "r") as file:
+            print(file.read())
+        sys.exit()
+
     # Ensure root privileges
     if os.geteuid() != 0:
         parser.error("root privileges required.")
 
-    np = NetplanConfigBuilder(config_path=args.configpath)
+
+    np = NetplanConfigBuilder(config_path=args.configpath, interface=args.interface)
 
     np.set_dhcp(state=args.dhcp)
 
