@@ -8,7 +8,7 @@ netswitch.py can be used to edit the netplan configuration file (/etc/netplan/01
 The virtual machine network settings must then be set to the corresponding configuration (Bridged Adapter or Interal). The alternative is editing the config file with VIM, and that becomes painful when you need to do this more than a few times.
 ### Usage
 ```
-usage: netswitch.py [-h] [-a IP/CIDR] [--dhcp] [--dns IP] [--gateway IP] [--config FILEPATH] [--apply]
+usage: netSwitch.py [-h] [-a IP/CIDR] [-d] [-n IP] [-g IP] [-i INTERFACE] [-c FILEPATH] [--print] [--apply]
 
 Requires sudo/root privileges to edit config file.
 
@@ -16,16 +16,21 @@ optional arguments:
   -h, --help            show this help message and exit
   -a IP/CIDR, --address IP/CIDR
                         Set IP address
-  --dhcp                Turn on DHCP
-  --dns IP              Set DNS nameserver address
-  --gateway IP          Set gateway address
-  --config FILEPATH     Specify path of config file to edit/create (Default:
+  -d, --dhcp            Turn on DHCP
+  -n IP, --dns IP       Set DNS nameserver address
+  -g IP, --gateway IP   Set gateway address
+  -i INTERFACE, --interface INTERFACE
+                        Set target interface (Default: enp0s3)
+  -c FILEPATH, --config FILEPATH
+                        Specify path of config file to edit/create (Default:
                         /etc/netplan/01-netcfg.yaml)
+  --print               Print current netplan configuration
   --apply               Run 'netplan apply' command after writing config
 
 Examples:
-	./netswitch.py -a 10.10.10.1/16 --dns 10.10.10.100 --gateway 10.10.10.100 --apply
-	./netswitch.py --dhcp --apply
+./netSwitch.py -a 10.10.10.1/16
+./netSwitch.py --dhcp
+./netSwitch.py --address=192.168.1.1/24 --dns 192.168.1.2 -g 192.168.1.2 --apply
 ```
 ### Issues & TODO
 - As of version 1.0, this will only work with the basic default netplan configuration file. It will destroy any other configurations.
