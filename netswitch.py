@@ -5,7 +5,7 @@ Netswitch - Quickly change the Netplan network configuration file
 """
 
 _NAME = "netSwitch.py"
-_VERS = "2.1"
+_VERS = "2.1.1"
 _AUTHOR = "LLCZ00"
 _DESCRIPTION = f"""Network Configuration Switch {_VERS}, by {_AUTHOR}\n
 Description: Edits /etc/netplan/01-netcfg.yaml to quickily change network configurations.
@@ -106,6 +106,13 @@ def main():
             epilog=f"Examples:\n./{_NAME} -a 10.10.10.1/16\n./{_NAME} --dhcp\n./{_NAME} --address=192.168.1.1/24 --dns 192.168.1.2 -g 192.168.1.2 --apply",
             description=_DESCRIPTION
         )
+    
+    parser.add_argument(
+            '--dhcp',
+            help="Turn on DHCP",
+            dest="dhcp",
+            action="store_true"         
+        )
 
     parser.add_argument(
             '-a', '--address',
@@ -115,14 +122,9 @@ def main():
             action=ValidateIPCIDR,
             type=str
         )
+    
     parser.add_argument(
-            '-d','--dhcp',
-            help="Turn on DHCP",
-            dest="dhcp",
-            action="store_true"         
-        )
-    parser.add_argument(
-            '-n','--dns',
+            '-d','--dns',
             help="Set DNS nameserver address",
             metavar="IP",
             dest="dns",
